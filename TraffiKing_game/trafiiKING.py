@@ -391,9 +391,11 @@ class Main_menu():
         self.font = pygame.font.Font("resources/Extrude.ttf", self.font_size)
         self.color = (255,255,255)
         self.start_button = self.font.render("Start", True, self.color)
+        self.skin_button = self.font.render("Skin", True, self.color)
         self.exit_button = self.font.render("Exit", True, self.color)
-        self.pos_start = 570
-        self.pos_exit = 670
+        self.pos_start = 450
+        self.pos_skin = 550
+        self.pos_exit = 650
         self.index = 0
         self.pointer = pygame.image.load("resources/police11.png").convert_alpha()
         self.pointer = pygame.transform.scale(self.pointer, (60,60))
@@ -416,8 +418,10 @@ class Main_menu():
         screen.blit(self.background_image, (0,0))
         screen.blit(self.image, (200, 70))
         self.start_button.set_alpha(self.timer)
+        self.skin_button.set_alpha(self.timer)
         self.exit_button.set_alpha(self.timer)
         screen.blit(self.start_button, (530, self.pos_start))
+        screen.blit(self.skin_button, (550, self.pos_skin))
         screen.blit(self.exit_button, (550, self.pos_exit))
         if self.timer > 254:
             if self.timer_button == 0:
@@ -431,18 +435,23 @@ class Main_menu():
 
 
                 elif (pygame.key.get_pressed()[pygame.K_SPACE] or pygame.key.get_pressed()[pygame.K_RETURN]) == True and self.index == 1:
-                    return False
+                    return 1
                 elif (pygame.key.get_pressed()[pygame.K_SPACE] or pygame.key.get_pressed()[pygame.K_RETURN]) == True and self.index == 2:
+                    return 2
+                elif (pygame.key.get_pressed()[pygame.K_SPACE] or pygame.key.get_pressed()[pygame.K_RETURN]) == True and self.index == 3:
                     pygame.quit()
                     exit()
-            if self.index > 2:
+
+            if self.index > 3:
                 self.index = 1
             elif self.index < 1:
-                self.index = 2
+                self.index = 3
 
             if self.index == 1:
                 screen.blit(self.pointer, (700, self.pos_start))
             elif self.index == 2:
+                screen.blit(self.pointer, (700, self.pos_skin))
+            elif self.index == 3:
                 screen.blit(self.pointer, (700, self.pos_exit))
 
 class Score_indicator():
@@ -673,7 +682,7 @@ while True:
     else:
         background_draw(background_image_position_y)
         menu.update_menu()
-        if menu.update_menu() == False:
+        if menu.update_menu() == 1:
             game_state = "playing"
 
 
