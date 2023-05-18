@@ -158,6 +158,7 @@ class Player(pygame.sprite.Sprite):
         self.rect.y = self.pos_y
         self.rect.x = self.pos_x
         self.score = 0
+        
 
 class Obstacle(pygame.sprite.Sprite):
     
