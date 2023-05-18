@@ -128,12 +128,22 @@ class Player(pygame.sprite.Sprite):
         self.rect.x = self.pos_x
 
 
+    def skin_update(self):
+        if skins.skin_picked == 0:
+            pass
+        else:
+            self.image = skins.skin_picked
+            self.image = pygame.transform.scale(self.image, (90,90))
+            self.rect = self.image.get_bounding_rect()
+            self.image = self.image.subsurface(self.rect)
 
     
     def update(self):
         """calls all class methods"""
         self.player_input()
         self.movement()
+
+
 
     
     def clean(self):
@@ -454,6 +464,88 @@ class Main_menu():
             elif self.index == 3:
                 screen.blit(self.pointer, (700, self.pos_exit))
 
+class Skin_pick():
+    def __init__(self):
+        self.background_image = pygame.image.load("resources/roads1.png").convert_alpha()
+        self.background_image = pygame.transform.scale(self.background_image, (1200,800))
+        self.image_size = 200
+        self.skin1_image = pygame.image.load("resources/car.png").convert_alpha()
+        self.skin1_image = pygame.transform.scale(self.skin1_image, (self.image_size,self.image_size))
+        self.skin2_image = pygame.image.load("resources/police11.png").convert_alpha()
+        self.skin2_image = pygame.transform.scale(self.skin2_image, (self.image_size,self.image_size))
+        self.image_position_x = (screen_width - self.image_size) / 2
+        self.image_position_y = (screen_height - self.image_size) / 2
+        self.rotation = 1 
+        self.font_size = 45
+        self.font = pygame.font.Font("resources/Extrude.ttf", self.font_size)
+        self.color = (255,255,255)
+        self.skin_text = self.font.render("Chosen", True, self.color)
+        self.instruction_text = self.font.render("Press LEFT or RIGHT to choose between skins", True, self.color)
+        self.esc_text = self.font.render("Press ESC to Main Menu", True, self.color)
+        self.timer = 0
+        self.timer_button = 0
+        self.index = 0
+        self.skins_number = 2
+        self.skin_picked = 0  #class players takes information from here
+        self.chosen = 1
+        
+    def skin_pick_update(self):
+        if 45 > self.timer_button > 0:
+            self.timer_button += 1
+        else:
+            self.timer_button = 0
+
+        if self.timer < 255:
+            self.timer += 1
+        
+        screen.blit(self.background_image, (0,0))
+        if self.timer > 254:
+            if self.timer_button == 0:
+                if pygame.key.get_pressed()[pygame.K_LEFT] == True:
+                    self.index -= 1
+                    self.timer_button += 1
+                    
+                elif pygame.key.get_pressed()[pygame.K_RIGHT] == True:
+                    self.index += 1
+                    self.timer_button += 1
+
+
+                elif (pygame.key.get_pressed()[pygame.K_SPACE] or pygame.key.get_pressed()[pygame.K_RETURN]) == True and self.index == 1:
+                    self.skin_picked = self.skin1_image
+                    self.chosen = 1
+                    for sprite in player:
+                        sprite.skin_update()
+
+                elif (pygame.key.get_pressed()[pygame.K_SPACE] or pygame.key.get_pressed()[pygame.K_RETURN]) == True and self.index == 2:
+                    self.skin_picked = self.skin2_image
+                    self.chosen = 2
+                    for sprite in player:
+                        sprite.skin_update()
+ 
+                    
+        if self.index > self.skins_number:
+                self.index = 1
+        elif self.index < 1:
+                self.index = self.skins_number
+        
+        if self.index == 1:
+            image = pygame.transform.rotate(self.skin1_image, self.rotation)
+
+
+        elif self.index == 2:
+            image = pygame.transform.rotate(self.skin2_image, self.rotation)
+            
+        if self.index == self.chosen:
+            screen.blit(self.skin_text, (500, 500))
+        self.image_position_x = (screen_width - image.get_width()) / 2
+        self.image_position_y = (screen_height - image.get_height()) / 2
+        screen.blit(image, (self.image_position_x, self.image_position_y))
+        screen.blit(self.instruction_text, (70,600))
+        screen.blit(self.esc_text, (330,700))
+        self.rotation += 1
+        if self.rotation > 360:
+            self.rotation = 1
+
 class Score_indicator():
     def __init__(self) -> None:
         self.font_size = 90
@@ -568,16 +660,19 @@ def clean_progress():
     
 
 pygame.init()
-screen = pygame.display.set_mode((1200,800))
+screen_width = 1200
+screen_height = 800
+screen = pygame.display.set_mode((screen_width,screen_height))
 pygame.display.set_caption('traffiKING')
 clock = pygame.time.Clock()
 keys = pygame.key.get_pressed()
 
 
-jimmy = Player("Jimmy")                     #initialize player
+jimmy = Player("Jimmy")                   #initialize player
 player = pygame.sprite.GroupSingle() 
 player.add(Player(jimmy))                   #adding player to sprite
 
+skins = Skin_pick()
 spawner = Spawner()
 menu = Main_menu()
 score = Score_indicator()
@@ -604,7 +699,7 @@ TARGET_FPS = 60
 current_frames = int(clock.get_fps())
 prev_time = time.time()
 dt = 0
-game_state = "intro"
+game_state = "skins"
 
 #font
 retry_text = Retry_screen_text()
@@ -633,8 +728,8 @@ while True:
         
         
 
-        player.draw(screen)
         player.update()
+        player.draw(screen)
 
         obstacle_group.draw(screen)
         obstacle_group.update()
@@ -677,6 +772,12 @@ while True:
         if intro.intro_update() == False:
             game_state = "menu"
 
+    #skins
+    elif game_state == "skins":
+        background_draw(background_image_position_y)
+        skins.skin_pick_update()
+        if pygame.key.get_pressed()[pygame.K_ESCAPE] == True:
+            game_state = "menu"
 
     #main menu
     else:
@@ -684,6 +785,8 @@ while True:
         menu.update_menu()
         if menu.update_menu() == 1:
             game_state = "playing"
+        elif menu.update_menu() == 2:
+            game_state = "skins"
 
 
     # print(clock.get_fps())
