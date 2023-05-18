@@ -133,7 +133,10 @@ class Player(pygame.sprite.Sprite):
             pass
         else:
             self.image = skins.skin_picked
-            self.image = pygame.transform.scale(self.image, (90,90))
+            if skins.chosen == 3:
+                self.image = pygame.transform.scale(self.image, (200,200))
+            else:
+                self.image = pygame.transform.scale(self.image, (90,90))
             self.rect = self.image.get_bounding_rect()
             self.image = self.image.subsurface(self.rect)
 
@@ -474,6 +477,8 @@ class Skin_pick():
         self.skin1_image = pygame.transform.scale(self.skin1_image, (self.image_size,self.image_size))
         self.skin2_image = pygame.image.load("resources/police11.png").convert_alpha()
         self.skin2_image = pygame.transform.scale(self.skin2_image, (self.image_size,self.image_size))
+        self.skin3_image = pygame.image.load("resources/truck1.png").convert_alpha()
+        self.skin3_image = pygame.transform.scale(self.skin3_image, (self.image_size,self.image_size))
         self.image_position_x = (screen_width - self.image_size) / 2
         self.image_position_y = (screen_height - self.image_size) / 2
         self.rotation = 1 
@@ -486,7 +491,7 @@ class Skin_pick():
         self.timer = 0
         self.timer_button = 0
         self.index = 0
-        self.skins_number = 2
+        self.skins_number = 3
         self.skin_picked = 0  #class players takes information from here
         self.chosen = 1
         
@@ -511,17 +516,23 @@ class Skin_pick():
                     self.timer_button += 1
 
 
-                elif (pygame.key.get_pressed()[pygame.K_SPACE] or pygame.key.get_pressed()[pygame.K_RETURN]) == True and self.index == 1:
-                    self.skin_picked = self.skin1_image
-                    self.chosen = 1
-                    for sprite in player:
-                        sprite.skin_update()
+            if (pygame.key.get_pressed()[pygame.K_SPACE] or pygame.key.get_pressed()[pygame.K_RETURN]) == True and self.index == 1:
+                self.skin_picked = self.skin1_image
+                self.chosen = 1
+                for sprite in player:
+                    sprite.skin_update()
 
-                elif (pygame.key.get_pressed()[pygame.K_SPACE] or pygame.key.get_pressed()[pygame.K_RETURN]) == True and self.index == 2:
-                    self.skin_picked = self.skin2_image
-                    self.chosen = 2
-                    for sprite in player:
-                        sprite.skin_update()
+            elif (pygame.key.get_pressed()[pygame.K_SPACE] or pygame.key.get_pressed()[pygame.K_RETURN]) == True and self.index == 2:
+                self.skin_picked = self.skin2_image
+                self.chosen = 2
+                for sprite in player:
+                    sprite.skin_update()
+            
+            elif (pygame.key.get_pressed()[pygame.K_SPACE] or pygame.key.get_pressed()[pygame.K_RETURN]) == True and self.index == 3:
+                self.skin_picked = self.skin3_image
+                self.chosen = 3
+                for sprite in player:
+                    sprite.skin_update()
  
                     
         if self.index > self.skins_number:
@@ -532,9 +543,11 @@ class Skin_pick():
         if self.index == 1:
             image = pygame.transform.rotate(self.skin1_image, self.rotation)
 
-
         elif self.index == 2:
             image = pygame.transform.rotate(self.skin2_image, self.rotation)
+        
+        elif self.index == 3:
+            image = pygame.transform.rotate(self.skin3_image, self.rotation)
             
         if self.index == self.chosen:
             screen.blit(self.skin_text, (500, 500))
