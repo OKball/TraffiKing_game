@@ -2,6 +2,7 @@ import pygame
 from sys import exit
 import random
 import time
+import json
 
 
 
@@ -403,13 +404,15 @@ class Main_menu():
         self.background_image = pygame.transform.scale(self.background_image, (1200,800))
         self.font_size = 52
         self.font = pygame.font.Font("resources/Extrude.ttf", self.font_size)
-        self.color = (255,255,255)
+        self.color = (255,250,100)
         self.start_button = self.font.render("Start", True, self.color)
         self.skin_button = self.font.render("Skin", True, self.color)
+        self.leader_button = self.font.render("Leaderboard", True, self.color)
         self.exit_button = self.font.render("Exit", True, self.color)
-        self.pos_start = 450
-        self.pos_skin = 550
-        self.pos_exit = 650
+        self.pos_start = 430
+        self.pos_skin = 530
+        self.pos_leaderboard = 630
+        self.pos_exit = 730
         self.index = 0
         self.pointer = pygame.image.load("resources/police11.png").convert_alpha()
         self.pointer = pygame.transform.scale(self.pointer, (60,60))
@@ -433,9 +436,11 @@ class Main_menu():
         screen.blit(self.image, (200, 70))
         self.start_button.set_alpha(self.timer)
         self.skin_button.set_alpha(self.timer)
+        self.leader_button.set_alpha(self.timer)
         self.exit_button.set_alpha(self.timer)
         screen.blit(self.start_button, (530, self.pos_start))
         screen.blit(self.skin_button, (550, self.pos_skin))
+        screen.blit(self.leader_button, (430, self.pos_leaderboard))
         screen.blit(self.exit_button, (550, self.pos_exit))
         if self.timer > 254:
             if self.timer_button == 0:
@@ -453,19 +458,23 @@ class Main_menu():
                 elif (pygame.key.get_pressed()[pygame.K_SPACE] or pygame.key.get_pressed()[pygame.K_RETURN]) == True and self.index == 2:
                     return 2
                 elif (pygame.key.get_pressed()[pygame.K_SPACE] or pygame.key.get_pressed()[pygame.K_RETURN]) == True and self.index == 3:
+                    return 3
+                elif (pygame.key.get_pressed()[pygame.K_SPACE] or pygame.key.get_pressed()[pygame.K_RETURN]) == True and self.index == 4:
                     pygame.quit()
                     exit()
 
-            if self.index > 3:
+            if self.index > 4:
                 self.index = 1
             elif self.index < 1:
-                self.index = 3
+                self.index = 4
 
             if self.index == 1:
-                screen.blit(self.pointer, (700, self.pos_start))
+                screen.blit(self.pointer, (720, self.pos_start))
             elif self.index == 2:
                 screen.blit(self.pointer, (700, self.pos_skin))
             elif self.index == 3:
+                screen.blit(self.pointer, (800, self.pos_leaderboard))
+            elif self.index == 4:
                 screen.blit(self.pointer, (700, self.pos_exit))
 
 class Skin_pick():
@@ -478,7 +487,7 @@ class Skin_pick():
         self.skin2_image = pygame.image.load("resources/police11.png").convert_alpha()
         self.skin2_image = pygame.transform.scale(self.skin2_image, (self.image_size,self.image_size))
         self.skin3_image = pygame.image.load("resources/truck1.png").convert_alpha()
-        self.skin3_image = pygame.transform.scale(self.skin3_image, (self.image_size,self.image_size))
+        self.skin3_image = pygame.transform.scale(self.skin3_image, (self.image_size * 2,self.image_size * 2))
         self.image_position_x = (screen_width - self.image_size) / 2
         self.image_position_y = (screen_height - self.image_size) / 2
         self.rotation = 1 
@@ -490,7 +499,7 @@ class Skin_pick():
         self.esc_text = self.font.render("Press ESC to Main Menu", True, self.color)
         self.timer = 0
         self.timer_button = 0
-        self.index = 0
+        self.index = 1
         self.skins_number = 3
         self.skin_picked = 0  #class players takes information from here
         self.chosen = 1
@@ -549,13 +558,13 @@ class Skin_pick():
         elif self.index == 3:
             image = pygame.transform.rotate(self.skin3_image, self.rotation)
             
-        if self.index == self.chosen:
-            screen.blit(self.skin_text, (500, 500))
         self.image_position_x = (screen_width - image.get_width()) / 2
         self.image_position_y = (screen_height - image.get_height()) / 2
         screen.blit(image, (self.image_position_x, self.image_position_y))
         screen.blit(self.instruction_text, (70,600))
         screen.blit(self.esc_text, (330,700))
+        if self.index == self.chosen:
+            screen.blit(self.skin_text, (500, 500))
         self.rotation += 1
         if self.rotation > 360:
             self.rotation = 1
@@ -713,10 +722,16 @@ TARGET_FPS = 60
 current_frames = int(clock.get_fps())
 prev_time = time.time()
 dt = 0
-game_state = "skins"
+game_state = "intro"
 
 #font
 retry_text = Retry_screen_text()
+
+
+#loading the scores
+# with open('resources/leaderboard.json', 'r', encoding='utf-8') as scores:
+#     leaderboard = json.load(scores)
+
 
 
 while True:
@@ -792,6 +807,13 @@ while True:
         skins.skin_pick_update()
         if pygame.key.get_pressed()[pygame.K_ESCAPE] == True:
             game_state = "menu"
+    
+    #leaderboard
+    elif game_state == "leaderboard":
+        background_draw(background_image_position_y)
+        if pygame.key.get_pressed()[pygame.K_ESCAPE] == True:
+            game_state = "menu"
+
 
     #main menu
     else:
@@ -801,6 +823,8 @@ while True:
             game_state = "playing"
         elif menu.update_menu() == 2:
             game_state = "skins"
+        elif menu.update_menu() == 3:
+            game_state = "leaderboard"
 
 
     # print(clock.get_fps())
