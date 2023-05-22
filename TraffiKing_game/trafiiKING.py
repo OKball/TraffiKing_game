@@ -425,7 +425,7 @@ class Main_menu():
 
     
     def update_menu(self):
-        if 45 > self.timer_button > 0:
+        if 80 > self.timer_button > 0:
             self.timer_button += 1
         else:
             self.timer_button = 0
@@ -509,40 +509,36 @@ class Skin_pick():
             self.timer_button += 1
         else:
             self.timer_button = 0
-
-        if self.timer < 255:
-            self.timer += 1
-        
+      
         screen.blit(self.background_image, (0,0))
-        if self.timer > 254:
-            if self.timer_button == 0:
-                if pygame.key.get_pressed()[pygame.K_LEFT] == True:
-                    self.index -= 1
-                    self.timer_button += 1
-                    
-                elif pygame.key.get_pressed()[pygame.K_RIGHT] == True:
-                    self.index += 1
-                    self.timer_button += 1
+        if self.timer_button == 0:
+            if pygame.key.get_pressed()[pygame.K_LEFT] == True:
+                self.index -= 1
+                self.timer_button += 1
+                
+            elif pygame.key.get_pressed()[pygame.K_RIGHT] == True:
+                self.index += 1
+                self.timer_button += 1
 
 
-            if (pygame.key.get_pressed()[pygame.K_SPACE] or pygame.key.get_pressed()[pygame.K_RETURN]) == True and self.index == 1:
-                self.skin_picked = self.skin1_image
-                self.chosen = 1
-                for sprite in player:
-                    sprite.skin_update()
+        if (pygame.key.get_pressed()[pygame.K_SPACE] or pygame.key.get_pressed()[pygame.K_RETURN]) == True and self.index == 1:
+            self.skin_picked = self.skin1_image
+            self.chosen = 1
+            for sprite in player:
+                sprite.skin_update()
 
-            elif (pygame.key.get_pressed()[pygame.K_SPACE] or pygame.key.get_pressed()[pygame.K_RETURN]) == True and self.index == 2:
-                self.skin_picked = self.skin2_image
-                self.chosen = 2
-                for sprite in player:
-                    sprite.skin_update()
-            
-            elif (pygame.key.get_pressed()[pygame.K_SPACE] or pygame.key.get_pressed()[pygame.K_RETURN]) == True and self.index == 3:
-                self.skin_picked = self.skin3_image
-                self.chosen = 3
-                for sprite in player:
-                    sprite.skin_update()
- 
+        elif (pygame.key.get_pressed()[pygame.K_SPACE] or pygame.key.get_pressed()[pygame.K_RETURN]) == True and self.index == 2:
+            self.skin_picked = self.skin2_image
+            self.chosen = 2
+            for sprite in player:
+                sprite.skin_update()
+        
+        elif (pygame.key.get_pressed()[pygame.K_SPACE] or pygame.key.get_pressed()[pygame.K_RETURN]) == True and self.index == 3:
+            self.skin_picked = self.skin3_image
+            self.chosen = 3
+            for sprite in player:
+                sprite.skin_update()
+
                     
         if self.index > self.skins_number:
                 self.index = 1
@@ -652,7 +648,7 @@ def player_obstacle_coliision():
         return False
     else: 
         return True
-
+    
 def background_draw(new_y):
     screen.blit(background_image, (0, new_y))
     screen.blit(background_image, (0, new_y - 800))
