@@ -340,10 +340,21 @@ class Retry_screen_text():
     def __init__(self) -> None:
         self.font_size = 52
         self.font = pygame.font.Font("resources/Extrude.ttf", self.font_size)
+        self.big_font = pygame.font.Font("resources/Extrude.ttf", 120)
         self.color = (255,255,255)
-        self.restart_text = self.font.render("press spacebar to Restart", True, self.color)
-        self.menu_text = self.font.render("press ESC for Menu", True, self.color)
+        self.press_text = self.font.render("press", True, self.color)
+        self.restart_text = self.font.render("to restart", True, self.color)
+        self.spacebar_text = self.font.render("SPACEBAR", True, (255,255,255))
+        self.esc_text = self.font.render("ESC", True, (255,255,255))
+        self.menu_text = self.font.render("for Menu", True, self.color)
+        self.save_result_text = self.font.render("TYPE IN YOUR USERNAME", True, (255,250,100))
+        self.high_score_text = self.font.render("New Highscore!", True, (255,250,100))
+        self.user_text = ''
         self.timer = 255
+        self.retry_text_start_x = 255
+        self.esc_text_start_x = 360
+        self.menu_text_y = 650
+        self.esc_text_y = 750
 
     def retry_text_update(self):
         self.timer -= 1
@@ -351,10 +362,26 @@ class Retry_screen_text():
         if self.timer <= 0:
             self.timer = 255
         self.font = pygame.font.Font("resources/Extrude.ttf", self.font_size)
-        self.restart_text = self.font.render("press spacebar to Restart", True, self.color)
-        self.menu_text = self.font.render("press ESC for Menu", True, self.color)
-        screen.blit(self.restart_text, (255,500))
-        screen.blit(self.menu_text, (340,700))
+        self.press_text = self.font.render("press", True, self.color)
+        self.restart_text = self.font.render("to Restart", True, self.color)
+        self.menu_text = self.font.render("for Menu", True, self.color)
+        score_text = self.big_font.render(f"SCORE: {jimmy.score}", True, (100,0,255))
+
+        screen.blit(self.press_text, (self.retry_text_start_x ,self.menu_text_y))
+        screen.blit(self.spacebar_text, (self.retry_text_start_x + self.press_text.get_width() + 5 ,self.menu_text_y))
+        screen.blit(self.restart_text, (self.retry_text_start_x + self.press_text.get_width() + self.spacebar_text.get_width() + 10 ,self.menu_text_y))
+
+        screen.blit(self.press_text, (self.esc_text_start_x ,self.esc_text_y))
+        screen.blit(self.esc_text, (self.esc_text_start_x + self.press_text.get_width() + 5 ,self.esc_text_y))
+        screen.blit(self.menu_text, (self.esc_text_start_x + self.press_text.get_width() + self.esc_text.get_width() + 10 ,self.esc_text_y))
+
+        screen.blit(score_text, (200,100))
+
+        if leaderboard.check_score(jimmy.score):              
+            text_surface = self.big_font.render(self.user_text, True, (255,255,255))
+            screen.blit(text_surface, (400, 400))
+            screen.blit(self.high_score_text, (230, 200))
+            screen.blit(self.save_result_text, (255, 300))
 
 class Intro_animation():
     def __init__(self) -> None:
@@ -421,8 +448,6 @@ class Main_menu():
         self.pointer_y = 0
         self.timer = 0
         self.timer_button = 0
-
-
     
     def update_menu(self):
         if 80 > self.timer_button > 0:
@@ -493,7 +518,7 @@ class Skin_pick():
         self.rotation = 1 
         self.font_size = 45
         self.font = pygame.font.Font("resources/Extrude.ttf", self.font_size)
-        self.color = (255,255,255)
+        self.color = (255,250,100)
         self.skin_text = self.font.render("Chosen", True, self.color)
         self.instruction_text = self.font.render("Press LEFT or RIGHT to choose between skins", True, self.color)
         self.esc_text = self.font.render("Press ESC to Main Menu", True, self.color)
@@ -642,6 +667,66 @@ class Spawn_possibilities_checker():
         self.current_possibilities[li].append(self.list_of_deleted[-1])
         del self.list_of_deleted[-1]
 
+class Leaderboard():
+    def __init__(self) -> None:
+        self.background_image = pygame.image.load("resources/roads1.png").convert_alpha()
+        self.background_image = pygame.transform.scale(self.background_image, (1200,800))
+        self.path = "resources/leaderboard.json"
+        self.score_list = []
+        self.font_size = 45
+        self.font = pygame.font.Font("resources/Extrude.ttf", self.font_size)
+        self.color = (255,250,100)
+        self.position_x = 400
+        self.position_y = 100
+        self.lines_distance = 60
+        self.name_score_distance = 400
+        self.title = self.font.render("Leaderboard", True, self.color)
+        self.exit = self.font.render("Presc ESC to exit", True, self.color)
+        try:
+            with open(self.path, "r", encoding="utf-8") as saves:
+                self.score_list = json.load(saves)
+        except:
+            self.score_list = [["AAAAA", 0], ["AAAAA", 0], ["AAAAA", 0], ["AAAAA", 0], ["AAAAA", 0], ["AAAAA", 0], ["AAAAA", 0], ["AAAAA", 0], ["AAAAA", 0], ["AAAAA", 0]]
+
+        def replacer(element):
+            return element[1]
+        
+        self.score_list = sorted(self.score_list, key=replacer, reverse=True)
+
+        
+
+    def draw_leaderboard(self):
+        screen.blit(self.background_image, (0,0))
+        screen.blit(self.title, (450, 50))
+        for line in self.score_list:
+            name = self.font.render(line[0], True, self.color)
+            screen.blit(name, (self.position_x, self.position_y))
+            score = self.font.render(str(line[1]), True, self.color)
+            screen.blit(score, (self.position_x + self.name_score_distance, self.position_y))
+ 
+            self.position_y += self.lines_distance
+
+        self.position_y = 100
+        screen.blit(self.exit, (420, 700))
+
+
+    def check_score(self, player_score):
+        """checks if the score of a player fits in leaderboard
+        """
+        if player_score >= self.score_list[-1][1]:
+            return True
+    
+    def ckeck_leaderboard(self, player_score, player_name) -> int:
+        """check precisely where to put score of a player in leaderboard"""
+        for i in range(9):
+            if player_score > self.score_list[i][1]:
+                self.score_list.insert(i, [player_name, player_score])
+                del self.score_list[-1]
+                break
+        
+        with open(self.path, "w", encoding="utf-8") as saves:
+            json.dump(self.score_list, saves)
+
 
 def player_obstacle_coliision():
     if pygame.sprite.spritecollide(player.sprite,obstacle_group,False):
@@ -676,6 +761,7 @@ def clean_progress():
     jimmy.clean()
     stat_bar.clean()
     jimmy.score = 0
+    retry_text.user_text = ''
     
 
 pygame.init()
@@ -685,6 +771,7 @@ screen = pygame.display.set_mode((screen_width,screen_height))
 pygame.display.set_caption('traffiKING')
 clock = pygame.time.Clock()
 keys = pygame.key.get_pressed()
+
 
 
 jimmy = Player("Jimmy")                   #initialize player
@@ -701,6 +788,7 @@ obstacle_group = pygame.sprite.Group()
 obstacle_checker_group = pygame.sprite.Group()
 
 available_positions = Spawn_possibilities_checker()
+leaderboard = Leaderboard()
 
 background_image_position_y = 0
 background_image_position_y_speed = 20
@@ -724,12 +812,6 @@ game_state = "intro"
 retry_text = Retry_screen_text()
 
 
-#loading the scores
-# with open('resources/leaderboard.json', 'r', encoding='utf-8') as scores:
-#     leaderboard = json.load(scores)
-
-
-
 while True:
     now = time.time()
     dt = now - prev_time
@@ -739,20 +821,29 @@ while True:
             pygame.quit()
             exit()
 
+        #retry screen player name getter
+        if leaderboard.check_score(jimmy.score) and event.type == pygame.KEYDOWN and game_state == "retry_screen":
+                if event.key == pygame.K_BACKSPACE:
+                    retry_text.user_text = retry_text.user_text[:-1]
+                elif event.key == pygame.K_RETURN and len(retry_text.user_text) > 0:
+                        #saving score
+                        leaderboard.ckeck_leaderboard(jimmy.score, retry_text.user_text)
+                        clean_progress()
+                        game_state = "leaderboard"
+                else:
+                    if len(retry_text.user_text) < 7 and event.key != pygame.K_RETURN:
+                        retry_text.user_text += event.unicode
+
+
     #if player started the game
     if game_state == "playing":
         background_draw(background_image_position_y)
         background_image_position_y += spawner.background_image_position_y_speed * dt * TARGET_FPS
-        
-        
         spawner.spawner_update()
         
-
         if background_image_position_y >= 800:
             background_image_position_y = 0
         
-        
-
         player.update()
         player.draw(screen)
 
@@ -776,44 +867,36 @@ while True:
             game_state = "playing"
 
         if pygame.key.get_pressed()[pygame.K_ESCAPE] == True:
-
             clean_progress()
             game_state = "menu"
-                    
+        
+        
         background_draw(background_image_position_y)
         player.draw(screen)
         obstacle_group.draw(screen)
         retry_text.retry_text_update()
-        font = pygame.font.Font("resources/Extrude.ttf", 120)
-        score_text = font.render(f"SCORE: {jimmy.score}", True, (100,0,255))
-        screen.blit(score_text, (200,200))
     
     #intro
     elif game_state == "intro":
-        # screen.fill((0,0,0))
-        # main_menu_image.set_alpha(1000)
-        # screen.blit(main_menu_image, (200,200))
         intro.intro_update()
         if intro.intro_update() == False:
             game_state = "menu"
 
     #skins
     elif game_state == "skins":
-        background_draw(background_image_position_y)
         skins.skin_pick_update()
         if pygame.key.get_pressed()[pygame.K_ESCAPE] == True:
             game_state = "menu"
     
     #leaderboard
     elif game_state == "leaderboard":
-        background_draw(background_image_position_y)
+        leaderboard.draw_leaderboard()
         if pygame.key.get_pressed()[pygame.K_ESCAPE] == True:
             game_state = "menu"
 
 
     #main menu
     else:
-        background_draw(background_image_position_y)
         menu.update_menu()
         if menu.update_menu() == 1:
             game_state = "playing"
