@@ -163,7 +163,6 @@ class Player(pygame.sprite.Sprite):
         self.rect.x = self.pos_x
         self.score = 0
         
-
 class Obstacle(pygame.sprite.Sprite):
     
     def __init__(self, type, direction, multiplier):
@@ -390,7 +389,7 @@ class Intro_animation():
         self.intro_image.set_alpha(self.intro_alpha)
         self.intro_image = pygame.transform.scale(self.intro_image, (800,400))
         self.background_alpha = 0
-        self.background_image = pygame.image.load("resources/roads1.png").convert_alpha()
+        self.background_image = pygame.image.load("resources/roads_blur_2.png").convert_alpha()
         self.background_image.set_alpha(self.background_alpha)
         self.background_image = pygame.transform.scale(background_image, (1200,800))
         self.intro_position_y = 200
@@ -427,7 +426,7 @@ class Main_menu():
     def __init__(self) -> None:
         self.image = pygame.image.load("resources/main_menu_image1.png").convert_alpha()
         self.image = pygame.transform.scale(self.image, (800,400))
-        self.background_image = pygame.image.load("resources/roads1.png").convert_alpha()
+        self.background_image = pygame.image.load("resources/roads_blur_2.png").convert_alpha()
         self.background_image = pygame.transform.scale(self.background_image, (1200,800))
         self.font_size = 52
         self.font = pygame.font.Font("resources/Extrude.ttf", self.font_size)
@@ -485,8 +484,15 @@ class Main_menu():
                 elif (pygame.key.get_pressed()[pygame.K_SPACE] or pygame.key.get_pressed()[pygame.K_RETURN]) == True and self.index == 3:
                     return 3
                 elif (pygame.key.get_pressed()[pygame.K_SPACE] or pygame.key.get_pressed()[pygame.K_RETURN]) == True and self.index == 4:
+                    with open("resources/leaderboard.json", 'r', encoding="utf-8") as score_list:
+                        backup = json.load(score_list)
+
+                    with open("resources/leaderboard_backup.json", 'w', encoding="utf-8") as score_list:
+                        json.dump(backup, score_list)
+
                     pygame.quit()
                     exit()
+                    
 
             if self.index > 4:
                 self.index = 1
@@ -504,14 +510,14 @@ class Main_menu():
 
 class Skin_pick():
     def __init__(self):
-        self.background_image = pygame.image.load("resources/roads1.png").convert_alpha()
+        self.background_image = pygame.image.load("resources/roads_blur_2.png").convert_alpha()
         self.background_image = pygame.transform.scale(self.background_image, (1200,800))
         self.image_size = 200
         self.skin1_image = pygame.image.load("resources/car.png").convert_alpha()
         self.skin1_image = pygame.transform.scale(self.skin1_image, (self.image_size,self.image_size))
         self.skin2_image = pygame.image.load("resources/police11.png").convert_alpha()
         self.skin2_image = pygame.transform.scale(self.skin2_image, (self.image_size,self.image_size))
-        self.skin3_image = pygame.image.load("resources/truck1.png").convert_alpha()
+        self.skin3_image = pygame.image.load("resources/truck2.png").convert_alpha()
         self.skin3_image = pygame.transform.scale(self.skin3_image, (self.image_size * 2,self.image_size * 2))
         self.image_position_x = (screen_width - self.image_size) / 2
         self.image_position_y = (screen_height - self.image_size) / 2
@@ -669,7 +675,7 @@ class Spawn_possibilities_checker():
 
 class Leaderboard():
     def __init__(self) -> None:
-        self.background_image = pygame.image.load("resources/roads1.png").convert_alpha()
+        self.background_image = pygame.image.load("resources/roads_blur_2.png").convert_alpha()
         self.background_image = pygame.transform.scale(self.background_image, (1200,800))
         self.path = "resources/leaderboard.json"
         self.score_list = []
@@ -718,7 +724,7 @@ class Leaderboard():
     
     def ckeck_leaderboard(self, player_score, player_name) -> int:
         """check precisely where to put score of a player in leaderboard"""
-        for i in range(9):
+        for i in range(10):
             if player_score > self.score_list[i][1]:
                 self.score_list.insert(i, [player_name, player_score])
                 del self.score_list[-1]
@@ -792,7 +798,7 @@ leaderboard = Leaderboard()
 
 background_image_position_y = 0
 background_image_position_y_speed = 20
-background_image = pygame.image.load("resources/roads1.png").convert()
+background_image = pygame.image.load("resources/roads_blur_2.png").convert()
 
 background_image = pygame.transform.scale(background_image, (1200,800))
 
