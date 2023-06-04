@@ -281,6 +281,7 @@ class Obstacle(pygame.sprite.Sprite):
         self.obst_checker.kill()
 
 class Obstacle_checker(pygame.sprite.Sprite):
+    """Checks if obstacles collide with eachother, by creating rect behind them looking if something is in this rectangle"""
     def __init__(self, pos_x, pos_y, width, speed) -> None:
         super().__init__()
         self.speed = speed
@@ -296,7 +297,7 @@ class Obstacle_checker(pygame.sprite.Sprite):
         self.rect.topleft = (new_x, new_y + 1)
 
 class Spawner():
-    
+    """handles type and desity of spawning cars, also speed of traffic"""
     def __init__(self) -> None:
         self.timer = 0
         self.timer2 = 0
@@ -383,6 +384,7 @@ class Retry_screen_text():
             screen.blit(self.save_result_text, (255, 300))
 
 class Intro_animation():
+    """hanldes intro animation"""
     def __init__(self) -> None:
         self.intro_alpha = 0
         self.intro_image = pygame.image.load("resources/main_menu_image1.png").convert_alpha()
@@ -614,6 +616,7 @@ class Score_indicator():
             screen.blit(self.score_text, (self.score_pos_x, self.score_pos_y))
 
 class Stat_bar():
+    """handles speedometer, score display, and animation"""
     def __init__(self) -> None:
         self.bar = pygame.rect.Rect(0,800,1200,100)
         self.bar_scroll_position = 800
@@ -660,6 +663,7 @@ class Stat_bar():
         spawner.speedometer_timer = 0
 
 class Spawn_possibilities_checker():
+    """helps obstacles to not spawn in eachother"""
     def __init__(self) -> None:
         self.current_possibilities = [
             [135,235,335,435,535],
@@ -733,12 +737,88 @@ class Leaderboard():
         with open(self.path, "w", encoding="utf-8") as saves:
             json.dump(self.score_list, saves)
 
+class Prop_spawner(pygame.sprite.Sprite):
+    def __init__(self) -> None:
+        super().__init__()
+        self.position_left_x = -40
+        self.position_right_x = 920
+        self.position_y = -1400
+        self.counter = 0
+        self.lamp_size = 350
+        self.index = 1
+        #light from lamps
+        self.light_rect = pygame.Rect((700,self.position_y), (400, 400))
+        self.shape_surf = pygame.Surface(self.light_rect.size, pygame.SRCALPHA)
+        pygame.draw.circle(self.shape_surf, (255,255,0,10), (200, 200), 200)
 
-def player_obstacle_coliision():
+   
+        self.image_left =  pygame.image.load("resources/lamp_left.png").convert_alpha()
+        self.image_left =  pygame.transform.scale(self.image_left, (self.lamp_size ,self.lamp_size))
+
+        self.rect_left = pygame.rect.Rect(self.position_left_x, self.position_y, 100, 100)
+        self.hitbox_left = pygame.rect.Rect(54, -1140, 10, 90)
+
+
+        self.image_right =  pygame.image.load("resources/lamp.png").convert_alpha()
+        self.image_right =  pygame.transform.scale(self.image_right, (self.lamp_size ,self.lamp_size))
+
+        self.rect_right = pygame.rect.Rect(self.position_right_x, self.position_y, 100, 100)
+        self.hitbox_right = pygame.rect.Rect(1129, -1140, 10, 90)
+ 
+    def update(self):
+        self.light_rect = pygame.Rect((100,self.rect_left.y), (400, 400))
+        self.right_light_rect = pygame.Rect((700,self.rect_left.y), (400, 400))
+        screen.blit(self.shape_surf, self.light_rect)
+        screen.blit(self.shape_surf, self.right_light_rect)
+
+
+        new_value = spawner.background_image_position_y_speed * dt * TARGET_FPS
+        self.rect_left.y += new_value
+        self.rect_right.y += new_value
+        self.hitbox_left.y += new_value
+        self.hitbox_right.y += new_value
+
+        if self.rect_left.y >= 2000 or self.rect_right.y >= 2000:
+            self.rect_left.y = -400
+            self.rect_right.y = -400
+            self.hitbox_left.y = -140
+            self.hitbox_right.y = -140
+            
+
+        screen.blit(self.image_left, self.rect_left)
+        screen.blit(self.image_right, self.rect_right)
+
+        pygame.draw.rect(screen, (255,0,0), self.hitbox_left)
+        pygame.draw.rect(screen, (255,0,0), self.hitbox_right)
+
+    def draw(self):
+        screen.blit(self.shape_surf, self.light_rect)
+        screen.blit(self.shape_surf, self.right_light_rect)
+        screen.blit(self.image_left, self.rect_left)
+        screen.blit(self.image_right, self.rect_right)
+
+    def clean(self):
+        self.position_y = -1400
+        self.counter = 0
+
+        self.rect_left.y = -1400
+        self.rect_right.y = -1400
+        self.hitbox_left.y = -1140
+        self.hitbox_right.y = -1140
+
+
+def player_obstacle_collision():
     if pygame.sprite.spritecollide(player.sprite,obstacle_group,False):
         return False
     else: 
         return True
+
+def player_prop_collision():
+    if pygame.Rect.colliderect(player.sprite.rect, props.hitbox_left) or pygame.Rect.colliderect(player.sprite.rect, props.hitbox_right):
+        return True
+    else:
+        return False
+
     
 def background_draw(new_y):
     screen.blit(background_image, (0, new_y))
@@ -768,7 +848,8 @@ def clean_progress():
     stat_bar.clean()
     jimmy.score = 0
     retry_text.user_text = ''
-    
+    props.clean()
+
 
 pygame.init()
 screen_width = 1200
@@ -784,6 +865,8 @@ jimmy = Player("Jimmy")                   #initialize player
 player = pygame.sprite.GroupSingle() 
 player.add(Player(jimmy))                   #adding player to sprite
 
+
+props = Prop_spawner()
 skins = Skin_pick()
 spawner = Spawner()
 menu = Main_menu()
@@ -812,7 +895,7 @@ TARGET_FPS = 60
 current_frames = int(clock.get_fps())
 prev_time = time.time()
 dt = 0
-game_state = "intro"
+game_state = "playing"
 
 #font
 retry_text = Retry_screen_text()
@@ -849,17 +932,21 @@ while True:
         
         if background_image_position_y >= 800:
             background_image_position_y = 0
-        
+
+
         player.update()
         player.draw(screen)
+
+        props.update()
 
         obstacle_group.draw(screen)
         obstacle_group.update()
 
+
         stat_bar.draw_stat_bar()
         score.update()
 
-        if player_obstacle_coliision() == False:
+        if player_obstacle_collision() == False or player_prop_collision():
             game_state = "retry_screen"
         
         # checking if each obstacle in group colides with another
@@ -876,8 +963,8 @@ while True:
             clean_progress()
             game_state = "menu"
         
-        
         background_draw(background_image_position_y)
+        props.draw()
         player.draw(screen)
         obstacle_group.draw(screen)
         retry_text.retry_text_update()
