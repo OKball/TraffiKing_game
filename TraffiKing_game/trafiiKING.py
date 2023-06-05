@@ -181,7 +181,7 @@ class Obstacle(pygame.sprite.Sprite):
             if self.direction == "up":
                 self.speed = 10
             else:
-                self.speed = 15
+                self.speed = 17
         elif self.type == "police":
             if self.direction == "up":
                 self.speed = 1
@@ -201,7 +201,7 @@ class Obstacle(pygame.sprite.Sprite):
             if self.direction == "up":
                 self.speed = 9
             else: 
-                self.speed = 16
+                self.speed = 17
 
         if self.type == "truck":
             self.image = pygame.image.load("resources/truck1.png").convert_alpha()
@@ -304,7 +304,7 @@ class Spawner():
         self.traffic_density = 0.05
         self.traffic_speed = 1
         self.available_types = ["truck", "randomcar1", "randomcar2", "randomcar3"] 
-        self.background_image_position_y_speed = 20
+        self.background_image_position_y_speed = 15
         self.speedometer_timer = 0
         
 
@@ -313,7 +313,7 @@ class Spawner():
         if self.speedometer_timer < 4100:
             self.speedometer_timer += 1 * dt * TARGET_FPS
         self.random_pick = self.available_types[random.randint(0, len(self.available_types)-1)]
-        self.background_image_position_y_speed = 20 * self.traffic_speed
+        self.background_image_position_y_speed = 15 * self.traffic_speed
         if (self.timer / 60) > 1:
             self.timer = 0
             self.timer2 += 1
@@ -333,7 +333,7 @@ class Spawner():
         self.timer2 = 0
         self.traffic_density = 0.05
         self.traffic_speed = 1
-        self.background_image_position_y_speed = 20
+        self.background_image_position_y_speed = 15
         self.speedometer_timer = 0
 
 class Retry_screen_text():
@@ -433,10 +433,12 @@ class Main_menu():
         self.font_size = 52
         self.font = pygame.font.Font("resources/Extrude.ttf", self.font_size)
         self.color = (255,250,100)
+
         self.start_button = self.font.render("Start", True, self.color)
         self.skin_button = self.font.render("Skin", True, self.color)
         self.leader_button = self.font.render("Leaderboard", True, self.color)
         self.exit_button = self.font.render("Exit", True, self.color)
+
         self.pos_start = 430
         self.pos_skin = 530
         self.pos_leaderboard = 630
@@ -464,10 +466,12 @@ class Main_menu():
         self.skin_button.set_alpha(self.timer)
         self.leader_button.set_alpha(self.timer)
         self.exit_button.set_alpha(self.timer)
+
         screen.blit(self.start_button, (530, self.pos_start))
         screen.blit(self.skin_button, (550, self.pos_skin))
         screen.blit(self.leader_button, (430, self.pos_leaderboard))
         screen.blit(self.exit_button, (550, self.pos_exit))
+
         if self.timer > 254:
             if self.timer_button == 0:
                 if pygame.key.get_pressed()[pygame.K_UP] == True:
@@ -601,7 +605,7 @@ class Skin_pick():
 class Score_indicator():
     def __init__(self) -> None:
         self.font_size = 90
-        self.color = (100,0,255)
+        self.color = (200,255,181)
         self.font = pygame.font.Font("resources/Extrude.ttf", self.font_size)
         self.score_text = self.font.render("0", False, self.color)
         self.score_pos_x = 30
@@ -619,19 +623,16 @@ class Stat_bar():
     """handles speedometer, score display, and animation"""
     def __init__(self) -> None:
         self.bar = pygame.rect.Rect(0,800,1200,100)
+        self.arrow = pygame.image.load("resources/arrow1.png").convert_alpha()
+        self.arrow_new = pygame.image.load("resources/arrow1.png").convert_alpha()
+        self.arrow = pygame.transform.scale(self.arrow, (30,500))
+        self.arrow_rotation = 45
+        self.arrow_x = 235
         self.bar_scroll_position = 800
-        self.color = (100,0,255)
         self.font = pygame.font.Font("resources/Extrude.ttf", 40)
         self.speedometer_alpha = 0
-        self.speedometer_image = pygame.image.load("resources/speedometer.png").convert_alpha()
+        self.speedometer_image = pygame.image.load("resources/spdmtr.png").convert_alpha()
         self.speedometer_image.set_alpha(self.speedometer_alpha)
-        self.speedometer_image2 = pygame.image.load("resources/speedometer_pointer.png").convert_alpha()
-        self.speedometer_image2.set_alpha(self.speedometer_alpha)
-        self.speed_revealer_x = 350
-        self.speed_revealer = pygame.rect.Rect(self.speed_revealer_x,750,500,50)
-        self.result = 0
-        
-
     
     def draw_stat_bar(self):
         if self.bar_scroll_position > 700:
@@ -643,24 +644,35 @@ class Stat_bar():
             if self.speedometer_alpha < 255:
                 self.speedometer_alpha += 1
                 self.speedometer_image.set_alpha(self.speedometer_alpha)
-                self.speedometer_image2.set_alpha(self.speedometer_alpha)
+                self.arrow_new.set_alpha(self.speedometer_alpha)
+
+            screen.blit(self.speedometer_image,(250, 700))
+            screen.blit(self.arrow_new, (self.arrow_x,740))
+            self.arrow_new = pygame.transform.rotate(self.arrow, self.arrow_rotation)
+
+        if self.arrow_rotation >= -45:
+            if self.arrow_rotation > 0:
+                self.arrow_rotation -= 0.01
+                self.arrow_x += 0.078
+            elif self.arrow_rotation > -45:
+                self.arrow_x = 585
+                self.arrow_rotation -= 0.007
+                self.arrow_rotation = round(self.arrow_rotation, 3)
+
+        print(spawner.traffic_speed)
+            
 
 
-            self.result = self.speed_revealer_x + (spawner.speedometer_timer * 0.12)
-            self.revealer_pixels_moved = round(self.result)
-            self.speed_revealer = pygame.rect.Rect(self.revealer_pixels_moved,750,500,50)
-            screen.blit(self.speedometer_image,(350, 700))
-            screen.blit(self.speedometer_image2,(350, 750))
-            pygame.draw.rect(screen, (0,0,0), self.speed_revealer)
+
 
     def clean(self):
         self.bar_scroll_position = 800
         self.color = (100,0,255)
         self.speedometer_alpha = 0
-        self.speed_revealer_x = 350
         self.result = 0
-        self.revealer_pixels_moved = 0
         spawner.speedometer_timer = 0
+        self.arrow_rotation = 45
+        self.arrow_x = 235
 
 class Spawn_possibilities_checker():
     """helps obstacles to not spawn in eachother"""
@@ -788,8 +800,8 @@ class Prop_spawner(pygame.sprite.Sprite):
         screen.blit(self.image_left, self.rect_left)
         screen.blit(self.image_right, self.rect_right)
 
-        pygame.draw.rect(screen, (255,0,0), self.hitbox_left)
-        pygame.draw.rect(screen, (255,0,0), self.hitbox_right)
+        # pygame.draw.rect(screen, (255,0,0), self.hitbox_left)
+        # pygame.draw.rect(screen, (255,0,0), self.hitbox_right)
 
     def draw(self):
         screen.blit(self.shape_surf, self.light_rect)
@@ -819,7 +831,6 @@ def player_prop_collision():
     else:
         return False
 
-    
 def background_draw(new_y):
     screen.blit(background_image, (0, new_y))
     screen.blit(background_image, (0, new_y - 800))
@@ -880,7 +891,6 @@ available_positions = Spawn_possibilities_checker()
 leaderboard = Leaderboard()
 
 background_image_position_y = 0
-background_image_position_y_speed = 20
 background_image = pygame.image.load("resources/roads_blur_2.png").convert()
 
 background_image = pygame.transform.scale(background_image, (1200,800))
@@ -937,11 +947,11 @@ while True:
         player.update()
         player.draw(screen)
 
-        props.update()
 
         obstacle_group.draw(screen)
         obstacle_group.update()
 
+        props.update()
 
         stat_bar.draw_stat_bar()
         score.update()
