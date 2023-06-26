@@ -23,7 +23,7 @@ class Player(pygame.sprite.Sprite):
         self.drag_applier = 2
         self.drag_x = 0
         self.drag_y = 0
-        self.grass_drag = 4
+        self.grass_drag = 3
         self.pos_x = 600 - (self.rect.width / 2)
         self.pos_y = 600
         self.rect.y = self.pos_y
@@ -113,7 +113,7 @@ class Player(pygame.sprite.Sprite):
        
  
         #checking road boundries and aplying drag
-        if (1100 - (self.rect.width/2) < self.rect.x or self.rect.x < 100 - (self.rect.width/2)) and (self.rect.y < 701 - self.rect.height):
+        if ((1100 - (self.rect.width/2) < self.rect.x or self.rect.x < 100 - (self.rect.width/2))) and (self.rect.y < 700 - self.rect.height):
             self.speed_y += self.grass_drag * dt * TARGET_FPS
         
 
@@ -174,6 +174,7 @@ class Obstacle(pygame.sprite.Sprite):
         self.speed = 0
         self.multiplier = multiplier                      # speed point how fast object is falling, so the bigger the speed, the slower object seems to move
         self.spawn_possibilites = available_positions.current_possibilities
+        self.parked_possibilities = [5, 1100, 1105, 15]
         self.random_centerline_offset = random.randint(-20, 20)
         
 
@@ -240,9 +241,16 @@ class Obstacle(pygame.sprite.Sprite):
             self.obst_checker = Obstacle_checker(self.rect.x, self.rect.bottom, self.rect.width, self.speed)
             self.obst_checker.add(obstacle_checker_group)
 
+        elif self.direction == "parked":
+            self.rect.x = self.parked_possibilities[random.randint(0,len(self.parked_possibilities )-1)]
+            if self.rect.x > 500:
+                self.image = pygame.transform.rotate(self.image, 90)
+            else:
+                self.image = pygame.transform.rotate(self.image, -90)
+            self.pos_y = self.rect.y
+            self.obst_checker = None
 
         else:
-
             self.image = pygame.transform.rotate(self.image, 180)
             self.rect.x = self.spawn_possibilites[0][random.randint(0,4)] + self.random_centerline_offset
             self.rect.y = -500
@@ -258,6 +266,11 @@ class Obstacle(pygame.sprite.Sprite):
         #right side
         if self.direction == "up":
             self.pos_y += self.speed * dt * 60
+        
+        #parked
+        elif self.direction == "parked":
+            self.pos_y += spawner.background_image_position_y_speed * dt * TARGET_FPS
+
         #left side
         else:
             self.pos_y +=  self.speed  * dt * 60
@@ -268,17 +281,21 @@ class Obstacle(pygame.sprite.Sprite):
     def update(self):
         self.movement()
         self.destroy()
-        self.obst_checker.update(self.rect.x, self.pos_y + self.rect.height, self.speed)
+        if self.obst_checker:
+            self.obst_checker.update(self.rect.x, self.pos_y + self.rect.height, self.speed)
+
 
     def destroy(self):
         if self.rect.top >= 800: 
             self.kill()
-            self.obst_checker.kill()
+            if self.obst_checker:
+                self.obst_checker.kill()
             Player.scoring(jimmy, 1)
     
     def clean(self):
         self.kill()
-        self.obst_checker.kill()
+        if self.obst_checker:
+            self.obst_checker.kill()
 
 class Obstacle_checker(pygame.sprite.Sprite):
     """Checks if obstacles collide with eachother, by creating rect behind them looking if something is in this rectangle"""
@@ -306,6 +323,8 @@ class Spawner():
         self.available_types = ["truck", "randomcar1", "randomcar2", "randomcar3"] 
         self.background_image_position_y_speed = 15
         self.speedometer_timer = 0
+        self.random_pick = self.available_types[random.randint(0, len(self.available_types)-1)]
+
         
 
     def spawner_update(self):
@@ -659,7 +678,6 @@ class Stat_bar():
                 self.arrow_rotation -= 0.007
                 self.arrow_rotation = round(self.arrow_rotation, 3)
 
-        print(spawner.traffic_speed)
             
 
 
@@ -768,14 +786,15 @@ class Prop_spawner(pygame.sprite.Sprite):
         self.image_left =  pygame.transform.scale(self.image_left, (self.lamp_size ,self.lamp_size))
 
         self.rect_left = pygame.rect.Rect(self.position_left_x, self.position_y, 100, 100)
-        self.hitbox_left = pygame.rect.Rect(54, -1140, 10, 90)
+        self.hitbox_left = pygame.rect.Rect(50, -1060, 20, 30)
 
 
         self.image_right =  pygame.image.load("resources/lamp.png").convert_alpha()
         self.image_right =  pygame.transform.scale(self.image_right, (self.lamp_size ,self.lamp_size))
 
         self.rect_right = pygame.rect.Rect(self.position_right_x, self.position_y, 100, 100)
-        self.hitbox_right = pygame.rect.Rect(1129, -1140, 10, 90)
+        self.hitbox_right = pygame.rect.Rect(1124, -1060, 20, 30)
+
  
     def update(self):
         self.light_rect = pygame.Rect((100,self.rect_left.y), (400, 400))
@@ -793,9 +812,10 @@ class Prop_spawner(pygame.sprite.Sprite):
         if self.rect_left.y >= 2000 or self.rect_right.y >= 2000:
             self.rect_left.y = -400
             self.rect_right.y = -400
-            self.hitbox_left.y = -140
-            self.hitbox_right.y = -140
+            self.hitbox_left.y = -60
+            self.hitbox_right.y = -60
             
+            obstacle_group.add(Obstacle("randomcar1", "parked", 1))
 
         screen.blit(self.image_left, self.rect_left)
         screen.blit(self.image_right, self.rect_right)
@@ -815,8 +835,8 @@ class Prop_spawner(pygame.sprite.Sprite):
 
         self.rect_left.y = -1400
         self.rect_right.y = -1400
-        self.hitbox_left.y = -1140
-        self.hitbox_right.y = -1140
+        self.hitbox_left.y = -1060
+        self.hitbox_right.y = -1060
 
 
 def player_obstacle_collision():
@@ -905,7 +925,7 @@ TARGET_FPS = 60
 current_frames = int(clock.get_fps())
 prev_time = time.time()
 dt = 0
-game_state = "playing"
+game_state = "intro"
 
 #font
 retry_text = Retry_screen_text()
