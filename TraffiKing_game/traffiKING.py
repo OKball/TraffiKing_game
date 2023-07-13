@@ -174,7 +174,7 @@ class Obstacle(pygame.sprite.Sprite):
         self.speed = 0
         self.multiplier = multiplier                      # speed point how fast object is falling, so the bigger the speed, the slower object seems to move
         self.spawn_possibilites = available_positions.current_possibilities
-        self.parked_possibilities = [5, 1100, 1105, 15]
+        self.parked_possibilities = [5,1100,1135,20,1105,15]
         self.random_centerline_offset = random.randint(-20, 20)
         
 
@@ -228,6 +228,14 @@ class Obstacle(pygame.sprite.Sprite):
             self.image = pygame.transform.scale(self.image, (90,90))
             self.speed *= self.multiplier
 
+        if self.direction == "parked":
+            self.picked_pos = self.parked_possibilities[random.randint(0,len(self.parked_possibilities )-1)]
+            if self.picked_pos > 500:
+                self.image = pygame.transform.rotate(self.image, 90)
+            else:
+                self.image = pygame.transform.rotate(self.image, -90)
+            
+
         self.rect = self.image.get_bounding_rect()
         self.image = self.image.subsurface(self.rect)
 
@@ -242,11 +250,8 @@ class Obstacle(pygame.sprite.Sprite):
             self.obst_checker.add(obstacle_checker_group)
 
         elif self.direction == "parked":
-            self.rect.x = self.parked_possibilities[random.randint(0,len(self.parked_possibilities )-1)]
-            if self.rect.x > 500:
-                self.image = pygame.transform.rotate(self.image, 90)
-            else:
-                self.image = pygame.transform.rotate(self.image, -90)
+            self.rect.y = -50
+            self.rect.x = self.picked_pos
             self.pos_y = self.rect.y
             self.obst_checker = None
 
@@ -814,8 +819,12 @@ class Prop_spawner(pygame.sprite.Sprite):
             self.rect_right.y = -400
             self.hitbox_left.y = -60
             self.hitbox_right.y = -60
+            for i in range(random.randint(0,2)):
+                car = Obstacle(random.choice(("randomcar1", "randomcar2", "police")), "parked", 1)
+                car.pos_y += (i * 40)
+                obstacle_group.add(car)
             
-            obstacle_group.add(Obstacle("randomcar1", "parked", 1))
+
 
         screen.blit(self.image_left, self.rect_left)
         screen.blit(self.image_right, self.rect_right)
