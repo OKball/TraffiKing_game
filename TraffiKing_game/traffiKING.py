@@ -804,8 +804,6 @@ class Prop_spawner(pygame.sprite.Sprite):
     def update(self):
         self.light_rect = pygame.Rect((100,self.rect_left.y), (400, 400))
         self.right_light_rect = pygame.Rect((700,self.rect_left.y), (400, 400))
-        screen.blit(self.shape_surf, self.light_rect)
-        screen.blit(self.shape_surf, self.right_light_rect)
 
 
         new_value = spawner.background_image_position_y_speed * dt * TARGET_FPS
@@ -814,6 +812,9 @@ class Prop_spawner(pygame.sprite.Sprite):
         self.hitbox_left.y += new_value
         self.hitbox_right.y += new_value
 
+        screen.blit(self.shape_surf, self.light_rect)
+        screen.blit(self.shape_surf, self.right_light_rect)
+        
         if self.rect_left.y >= 2000 or self.rect_right.y >= 2000:
             self.rect_left.y = -400
             self.rect_right.y = -400
@@ -927,6 +928,8 @@ background_image = pygame.transform.scale(background_image, (1200,800))
 main_menu_image = pygame.image.load("resources/main_menu_image1.png").convert_alpha()
 main_menu_image = pygame.transform.scale(main_menu_image, (800,400))
 
+icon = pygame.image.load("resources/police11.png").convert_alpha()
+pygame.display.set_icon(icon)
 intro = Intro_animation()
 #frames
 FPS = 144
