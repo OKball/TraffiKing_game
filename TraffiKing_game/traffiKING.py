@@ -24,11 +24,21 @@ class Player(pygame.sprite.Sprite):
         self.drag_x = 0
         self.drag_y = 0
         self.grass_drag = 3
+        self.score = 0
+        self.multiplayer = False
+        self.player = 1
+        self.K_w = True
+        self.K_s = True
+        self.K_a = True
+        self.K_d = True
+        self.K_up = True
+        self.K_down = True
+        self.K_left = True
+        self.K_right = True
         self.pos_x = 600 - (self.rect.width / 2)
         self.pos_y = 600
         self.rect.y = self.pos_y
         self.rect.x = self.pos_x
-        self.score = 0
 
 
     def scoring(self, point):
@@ -40,17 +50,37 @@ class Player(pygame.sprite.Sprite):
 
     def player_input(self):
         """checks user input, and changes values of moving speed"""
-
         keys = pygame.key.get_pressed()
-        if (keys[pygame.K_w] or keys[pygame.K_UP]) and self.rect.top > 0 and self.speed_y > -600 * dt:
-            self.speed_y -= self.speedadd * dt
-        if (keys[pygame.K_s] or keys[pygame.K_DOWN]) and self.rect.bottom < 700 and self.speed_y > -600 * dt:
-            self.speed_y += self.speedadd * dt
-        if (keys[pygame.K_a] or keys[pygame.K_LEFT]) and self.rect.x > 0 and self.speed_x > -550 * dt:
-            self.speed_x -= self.speedadd * dt
-        if (keys[pygame.K_d]  or keys[pygame.K_RIGHT]) and self.rect.x < 1155 and self.speed_x < 550 * dt:
-            self.speed_x += self.speedadd * dt
 
+        if self.multiplayer == False:
+            if (keys[pygame.K_w] or keys[pygame.K_UP]) and self.rect.top > 0 and self.speed_y > -600 * dt:
+                self.speed_y -= self.speedadd * dt
+            if (keys[pygame.K_s] or keys[pygame.K_DOWN]) and self.rect.bottom < 700 and self.speed_y > -600 * dt:
+                self.speed_y += self.speedadd * dt
+            if (keys[pygame.K_a] or keys[pygame.K_LEFT]) and self.rect.x > 0 and self.speed_x > -550 * dt:
+                self.speed_x -= self.speedadd * dt
+            if (keys[pygame.K_d]  or keys[pygame.K_RIGHT]) and self.rect.x < 1155 and self.speed_x < 550 * dt:
+                self.speed_x += self.speedadd * dt
+
+        elif self.multiplayer and self.player==1:
+            if keys[pygame.K_w] and self.rect.top > 0 and self.speed_y > -600 * dt and self.K_w:
+                self.speed_y -= self.speedadd * dt
+            if keys[pygame.K_s] and self.rect.bottom < 700 and self.speed_y > -600 * dt and self.K_s:
+                self.speed_y += self.speedadd * dt
+            if keys[pygame.K_a] and self.rect.x > 0 and self.speed_x > -550 * dt and self.K_a:
+                self.speed_x -= self.speedadd * dt
+            if keys[pygame.K_d] and self.rect.x < 1155 and self.speed_x < 550 * dt and self.K_d:
+                self.speed_x += self.speedadd * dt
+
+        elif self.multiplayer and self.player==2:
+            if keys[pygame.K_UP] and self.rect.top > 0 and self.speed_y > -600 * dt and self.K_up:
+                self.speed_y -= self.speedadd * dt
+            if keys[pygame.K_DOWN] and self.rect.bottom < 700 and self.speed_y > -600 * dt and self.K_down:
+                self.speed_y += self.speedadd * dt
+            if keys[pygame.K_LEFT] and self.rect.x > 0 and self.speed_x > -550 * dt and self.K_left:
+                self.speed_x -= self.speedadd * dt
+            if keys[pygame.K_RIGHT] and self.rect.x < 1155 and self.speed_x < 550 * dt and self.K_right:
+                self.speed_x += self.speedadd * dt
 
 
     def movement(self):
@@ -454,7 +484,7 @@ class Main_menu():
         self.image = pygame.transform.scale(self.image, (800,400))
         self.background_image = pygame.image.load("resources/roads_blur_2.png").convert_alpha()
         self.background_image = pygame.transform.scale(self.background_image, (1200,800))
-        self.font_size = 52
+        self.font_size = 42
         self.font = pygame.font.Font("resources/Extrude.ttf", self.font_size)
         self.color = (255,250,100)
 
@@ -462,11 +492,14 @@ class Main_menu():
         self.skin_button = self.font.render("Skin", True, self.color)
         self.leader_button = self.font.render("Leaderboard", True, self.color)
         self.exit_button = self.font.render("Exit", True, self.color)
+        self.multiplayer_button = self.font.render("2 players", True, self.color)
 
         self.pos_start = 430
-        self.pos_skin = 530
-        self.pos_leaderboard = 630
-        self.pos_exit = 730
+        self.pos_multiplayer = 500
+        self.pos_skin = 570
+        self.pos_leaderboard = 640
+        self.pos_exit = 710
+
         self.index = 0
         self.pointer = pygame.image.load("resources/police11.png").convert_alpha()
         self.pointer = pygame.transform.scale(self.pointer, (60,60))
@@ -476,6 +509,11 @@ class Main_menu():
         self.timer = 0
         self.timer_button = 0
     
+    def clean_menu(self):
+        self.index = 0
+        self.timer = 0
+        self.timer_button = 0
+
     def update_menu(self):
         if 80 > self.timer_button > 0:
             self.timer_button += 1
@@ -484,16 +522,20 @@ class Main_menu():
 
         if self.timer < 255:
             self.timer += 1
+
         screen.blit(self.background_image, (0,0))
         screen.blit(self.image, (200, 70))
+
         self.start_button.set_alpha(self.timer)
+        self.multiplayer_button.set_alpha(self.timer)
         self.skin_button.set_alpha(self.timer)
         self.leader_button.set_alpha(self.timer)
         self.exit_button.set_alpha(self.timer)
 
         screen.blit(self.start_button, (530, self.pos_start))
+        screen.blit(self.multiplayer_button, (490, self.pos_multiplayer))
         screen.blit(self.skin_button, (550, self.pos_skin))
-        screen.blit(self.leader_button, (430, self.pos_leaderboard))
+        screen.blit(self.leader_button, (460, self.pos_leaderboard))
         screen.blit(self.exit_button, (550, self.pos_exit))
 
         if self.timer > 254:
@@ -514,6 +556,8 @@ class Main_menu():
                 elif (pygame.key.get_pressed()[pygame.K_SPACE] or pygame.key.get_pressed()[pygame.K_RETURN]) == True and self.index == 3:
                     return 3
                 elif (pygame.key.get_pressed()[pygame.K_SPACE] or pygame.key.get_pressed()[pygame.K_RETURN]) == True and self.index == 4:
+                    return 4
+                elif (pygame.key.get_pressed()[pygame.K_SPACE] or pygame.key.get_pressed()[pygame.K_RETURN]) == True and self.index == 5:
                     with open("resources/leaderboard.json", 'r', encoding="utf-8") as score_list:
                         backup = json.load(score_list)
 
@@ -524,19 +568,97 @@ class Main_menu():
                     exit()
                     
 
-            if self.index > 4:
+            if self.index > 5:
                 self.index = 1
             elif self.index < 1:
-                self.index = 4
+                self.index = 5
 
             if self.index == 1:
-                screen.blit(self.pointer, (720, self.pos_start))
+                screen.blit(self.pointer, (680, self.pos_start - 10))
             elif self.index == 2:
-                screen.blit(self.pointer, (700, self.pos_skin))
+                screen.blit(self.pointer, (730, self.pos_multiplayer - 10))
             elif self.index == 3:
-                screen.blit(self.pointer, (800, self.pos_leaderboard))
+                screen.blit(self.pointer, (680, self.pos_skin - 10))
             elif self.index == 4:
-                screen.blit(self.pointer, (700, self.pos_exit))
+                screen.blit(self.pointer, (770, self.pos_leaderboard - 10))
+            elif self.index == 5:
+                screen.blit(self.pointer, (680, self.pos_exit - 10))
+            
+class Pause():
+    def __init__(self) -> None:
+        self.font_size = 42
+        self.font = pygame.font.Font("resources/Extrude.ttf", self.font_size)
+        self.color = (255,250,100)
+
+        self.start_button = self.font.render("Start", True, self.color)
+        self.exit_button = self.font.render("Exit", True, self.color)
+
+        self.pos_start = 430
+        self.pos_exit = 500
+
+        self.index = 0
+        self.pointer = pygame.image.load("resources/police11.png").convert_alpha()
+        self.pointer = pygame.transform.scale(self.pointer, (60,60))
+        self.pointer = pygame.transform.rotate(self.pointer, 90)
+        self.pointer_x = 1000
+        self.pointer_y = 0
+        self.timer = 0
+        self.timer_button = 0
+    
+    def update_pause(self):
+
+        if 80 > self.timer_button > 0:
+            self.timer_button += 1
+        else:
+            self.timer_button = 0
+
+        if self.timer < 255:
+            self.timer += 1
+
+        background_draw(background_image_position_y)
+        self.start_button.set_alpha(self.timer)
+        self.exit_button.set_alpha(self.timer)
+        player.draw(screen)
+        obstacle_group.draw(screen)
+        props.draw()
+
+
+        pygame.draw.rect(screen, (0,0,0), stat_bar.bar)
+
+        if stat_bar.bar_scroll_position == 700:
+            screen.blit(stat_bar.speedometer_image,(250, 700))
+            screen.blit(stat_bar.arrow_new, (stat_bar.arrow_x,740))
+
+        if stat_bar.bar_scroll_position == 700:
+            screen.blit(score.score_text, (score.score_pos_x, score.score_pos_y))
+
+        screen.blit(self.start_button, (530, self.pos_start))
+        screen.blit(self.exit_button, (550, self.pos_exit))
+
+        if self.timer > 254:
+            if self.timer_button == 0:
+                if pygame.key.get_pressed()[pygame.K_UP] == True:
+                    self.index -= 1
+                    self.timer_button += 1
+                    
+                elif pygame.key.get_pressed()[pygame.K_DOWN] == True:
+                    self.index += 1
+                    self.timer_button += 1
+
+                elif (pygame.key.get_pressed()[pygame.K_SPACE] or pygame.key.get_pressed()[pygame.K_RETURN]) == True and self.index == 1:
+                    return 1
+                elif (pygame.key.get_pressed()[pygame.K_SPACE] or pygame.key.get_pressed()[pygame.K_RETURN]) == True and self.index == 2:
+                    return 2
+
+            if self.index > 2:
+                self.index = 1
+            elif self.index < 1:
+                self.index = 2
+
+            if self.index == 1:
+                screen.blit(self.pointer, (680, self.pos_start - 10))
+            elif self.index == 2:
+                screen.blit(self.pointer, (680, self.pos_exit - 10))
 
 class Skin_pick():
     def __init__(self):
@@ -658,6 +780,7 @@ class Stat_bar():
         self.speedometer_image = pygame.image.load("resources/spdmtr.png").convert_alpha()
         self.speedometer_image.set_alpha(self.speedometer_alpha)
     
+    
     def draw_stat_bar(self):
         if self.bar_scroll_position > 700:
             self.bar_scroll_position -= 1
@@ -684,10 +807,6 @@ class Stat_bar():
                 self.arrow_rotation = round(self.arrow_rotation, 3)
 
             
-
-
-
-
     def clean(self):
         self.bar_scroll_position = 800
         self.color = (100,0,255)
@@ -849,16 +968,64 @@ class Prop_spawner(pygame.sprite.Sprite):
         self.hitbox_right.y = -1060
 
 
-def player_obstacle_collision():
+
+def player_obstacle_collision(multiplayer=False):
+    if multiplayer:
+        if pygame.sprite.spritecollide(player2.sprite, obstacle_group,False):
+            return False
     if pygame.sprite.spritecollide(player.sprite,obstacle_group,False):
         return False
     else: 
         return True
 
-def player_prop_collision():
+def player_prop_collision(multiplayer=False):
+    if multiplayer:
+        if pygame.Rect.colliderect(player2.sprite.rect, props.hitbox_left) or pygame.Rect.colliderect(player2.sprite.rect, props.hitbox_right):
+            return True
     if pygame.Rect.colliderect(player.sprite.rect, props.hitbox_left) or pygame.Rect.colliderect(player.sprite.rect, props.hitbox_right):
         return True
     else:
+        return False
+
+def player_player_collision():
+    if pygame.Rect.colliderect(player.sprite.rect, player2.sprite.rect):
+        if player.sprite.rect.x < player2.sprite.rect.x:
+            player2.sprite.K_left = False
+            player.sprite.K_d = False
+            new_pos = round((player2.sprite.rect.x + player.sprite.rect.x) / 2)
+            player2.sprite.pos_x = new_pos + 23
+            player.sprite.pos_x = new_pos - 23
+        if player.sprite.rect.x > player2.sprite.rect.x:
+            player2.sprite.K_right = False
+            player.sprite.K_a = False
+            new_pos = round((player2.sprite.rect.x + player.sprite.rect.x) / 2)
+            player2.sprite.pos_x = new_pos - 23
+            player.sprite.pos_x = new_pos + 23
+        if player.sprite.rect.y > player2.sprite.rect.y:
+            player2.sprite.K_down = False
+            player.sprite.K_w = False
+        if player.sprite.rect.y < player2.sprite.rect.y:
+            player2.sprite.K_up = False
+            player.sprite.K_d = False
+
+        return True
+    else:
+        player.sprite.K_w = True
+        player.sprite.K_s = True
+        player.sprite.K_a = True
+        player.sprite.K_d = True
+        player.sprite.K_up = True
+        player.sprite.K_down = True
+        player.sprite.K_left = True
+        player.sprite.K_right = True
+        player2.sprite.K_w = True
+        player2.sprite.K_s = True
+        player2.sprite.K_a = True
+        player2.sprite.K_d = True
+        player2.sprite.K_up = True
+        player2.sprite.K_down = True
+        player2.sprite.K_left = True
+        player2.sprite.K_right = True
         return False
 
 def background_draw(new_y):
@@ -885,9 +1052,13 @@ def clean_progress():
     spawner.clean()
     for sprite in player:
         sprite.clean()
+    for sprite in player2:
+        sprite.clean()
     jimmy.clean()
+    johny.clean()
     stat_bar.clean()
     jimmy.score = 0
+    johny.score = 0
     retry_text.user_text = ''
     props.clean()
 
@@ -906,6 +1077,10 @@ jimmy = Player("Jimmy")                   #initialize player
 player = pygame.sprite.GroupSingle() 
 player.add(Player(jimmy))                   #adding player to sprite
 
+johny = Player("Johny")                     # 2 player
+player2 = pygame.sprite.GroupSingle()
+player2.add(Player(johny))
+
 
 props = Prop_spawner()
 skins = Skin_pick()
@@ -913,6 +1088,7 @@ spawner = Spawner()
 menu = Main_menu()
 score = Score_indicator()
 stat_bar = Stat_bar()
+pause = Pause()
 
 obstacle_group = pygame.sprite.Group()
 obstacle_checker_group = pygame.sprite.Group()
@@ -937,7 +1113,7 @@ TARGET_FPS = 60
 current_frames = int(clock.get_fps())
 prev_time = time.time()
 dt = 0
-game_state = "intro"
+game_state = "playing"
 
 #font
 retry_text = Retry_screen_text()
@@ -965,35 +1141,66 @@ while True:
                     if len(retry_text.user_text) < 7 and event.key != pygame.K_RETURN:
                         retry_text.user_text += event.unicode
 
+        if game_state == "playing" and event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE or event.key == pygame.K_p:
+                game_state = "pause"
 
     #if player started the game
     if game_state == "playing":
-        background_draw(background_image_position_y)
-        background_image_position_y += spawner.background_image_position_y_speed * dt * TARGET_FPS
-        spawner.spawner_update()
-        
-        if background_image_position_y >= 800:
-            background_image_position_y = 0
+            player.sprite.multiplayer = False 
+            background_draw(background_image_position_y)
+            background_image_position_y += spawner.background_image_position_y_speed * dt * TARGET_FPS
+            spawner.spawner_update()
+            
+            if background_image_position_y >= 800:
+                background_image_position_y = 0
 
 
-        player.update()
-        player.draw(screen)
+            player.update()
+            player.draw(screen)
 
 
-        obstacle_group.draw(screen)
-        obstacle_group.update()
+            obstacle_group.draw(screen)
+            obstacle_group.update()
 
-        props.update()
+            props.update()
 
-        stat_bar.draw_stat_bar()
-        score.update()
+            stat_bar.draw_stat_bar()
+            score.update()
 
-        if player_obstacle_collision() == False or player_prop_collision():
-            game_state = "retry_screen"
-        
-        # checking if each obstacle in group colides with another
-        obstacle_obstacle_collision()
+            if player_obstacle_collision() == False or player_prop_collision():
+                game_state = "retry_screen"
+            
+            # checking if each obstacle in group colides with another
+            obstacle_obstacle_collision()
 
+    elif game_state == "2_players":
+            background_draw(background_image_position_y)
+            background_image_position_y += spawner.background_image_position_y_speed * dt * TARGET_FPS
+            spawner.spawner_update()
+            player_player_collision()
+            if background_image_position_y >= 800:
+                background_image_position_y = 0
+
+            player.update()
+            player.draw(screen)
+            player2.update()
+            player2.draw(screen)
+      
+
+            obstacle_group.draw(screen)
+            obstacle_group.update()
+
+            props.update()
+
+            stat_bar.draw_stat_bar()
+            score.update()
+
+            # if player_obstacle_collision(multiplayer=True) == False or player_prop_collision(multiplayer=True):
+            #     game_state = "2_player_retry_screen"
+            
+            # checking if each obstacle in group colides with another
+            obstacle_obstacle_collision()
             
     #retry menu screen
     elif game_state == "retry_screen":
@@ -1011,10 +1218,41 @@ while True:
         obstacle_group.draw(screen)
         retry_text.retry_text_update()
     
+    elif game_state == "2_player_retry_screen":
+        if pygame.key.get_pressed()[pygame.K_SPACE] == True:
+            clean_progress()
+            game_state = "2_players"
+            player.sprite.multiplayer = True    
+            player2.sprite.multiplayer = True   
+            player2.sprite.player = 2           
+            player.sprite.pos_x = 500
+            player2.sprite.pos_x = 700
+
+        if pygame.key.get_pressed()[pygame.K_ESCAPE] == True:
+            clean_progress()
+            game_state = "menu"
+        
+        background_draw(background_image_position_y)
+        props.draw()
+        player.draw(screen)
+        player2.draw(screen)
+        obstacle_group.draw(screen)
+        retry_text.retry_text_update()
+
     #intro
     elif game_state == "intro":
         intro.intro_update()
         if intro.intro_update() == False:
+            game_state = "menu"
+
+    #pause screen
+    elif game_state == "pause":
+        pause.update_pause()
+        if pause.update_pause() == 1:
+            game_state = "playing"
+        elif pause.update_pause() == 2:
+            clean_progress()
+            menu.clean_menu()
             game_state = "menu"
 
     #skins
@@ -1036,8 +1274,15 @@ while True:
         if menu.update_menu() == 1:
             game_state = "playing"
         elif menu.update_menu() == 2:
-            game_state = "skins"
+            game_state = "2_players"
+            player.sprite.multiplayer = True    
+            player2.sprite.multiplayer = True   
+            player2.sprite.player = 2           
+            player.sprite.pos_x = 500
+            player2.sprite.pos_x = 700
         elif menu.update_menu() == 3:
+            game_state = "skins"
+        elif menu.update_menu() == 4:
             game_state = "leaderboard"
 
 
