@@ -143,7 +143,7 @@ class Player(pygame.sprite.Sprite):
        
  
         #checking road boundries and aplying drag
-        if ((1100 - (self.rect.width/2) < self.rect.x or self.rect.x < 100 - (self.rect.width/2))) and (self.rect.y < 700 - self.rect.height):
+        if ((1100 - (self.rect.width/2) < self.rect.x or self.rect.x < 100 - (self.rect.width/2))) and (self.rect.y <= 700 - self.rect.height):
             self.speed_y += self.grass_drag * dt * TARGET_FPS
         
 
@@ -186,7 +186,7 @@ class Player(pygame.sprite.Sprite):
         self.drag_applier = 2
         self.drag_x = 0
         self.drag_y = 0
-        self.grass_drag = 4
+        self.grass_drag = 3
         self.pos_x = 600 - (self.rect.width / 2)
         self.pos_y = 600
         self.rect.y = self.pos_y
@@ -619,6 +619,7 @@ class Pause():
         self.start_button.set_alpha(self.timer)
         self.exit_button.set_alpha(self.timer)
         player.draw(screen)
+        player2.draw(screen)
         obstacle_group.draw(screen)
         props.draw()
 
@@ -1113,7 +1114,7 @@ TARGET_FPS = 60
 current_frames = int(clock.get_fps())
 prev_time = time.time()
 dt = 0
-game_state = "playing"
+game_state = "menu"
 
 #font
 retry_text = Retry_screen_text()
@@ -1144,6 +1145,9 @@ while True:
         if game_state == "playing" and event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE or event.key == pygame.K_p:
                 game_state = "pause"
+        elif game_state == "2_players"  and event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE or event.key == pygame.K_p:
+                game_state = "pause_multiplayer"
 
     #if player started the game
     if game_state == "playing":
@@ -1196,8 +1200,8 @@ while True:
             stat_bar.draw_stat_bar()
             score.update()
 
-            # if player_obstacle_collision(multiplayer=True) == False or player_prop_collision(multiplayer=True):
-            #     game_state = "2_player_retry_screen"
+            if player_obstacle_collision(multiplayer=True) == False or player_prop_collision(multiplayer=True):
+                game_state = "2_player_retry_screen"
             
             # checking if each obstacle in group colides with another
             obstacle_obstacle_collision()
@@ -1250,6 +1254,16 @@ while True:
         pause.update_pause()
         if pause.update_pause() == 1:
             game_state = "playing"
+        elif pause.update_pause() == 2:
+            clean_progress()
+            menu.clean_menu()
+            game_state = "menu"
+    
+    #pause screen multiplayer
+    elif game_state == "pause_multiplayer":
+        pause.update_pause()
+        if pause.update_pause() == 1:
+            game_state = "2_players"
         elif pause.update_pause() == 2:
             clean_progress()
             menu.clean_menu()
