@@ -1114,7 +1114,7 @@ TARGET_FPS = 60
 current_frames = int(clock.get_fps())
 prev_time = time.time()
 dt = 0
-game_state = "menu"
+game_state = "intro"
 
 #font
 retry_text = Retry_screen_text()
