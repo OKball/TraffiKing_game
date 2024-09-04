@@ -558,14 +558,18 @@ class Main_menu():
                 elif (pygame.key.get_pressed()[pygame.K_SPACE] or pygame.key.get_pressed()[pygame.K_RETURN]) == True and self.index == 4:
                     return 4
                 elif (pygame.key.get_pressed()[pygame.K_SPACE] or pygame.key.get_pressed()[pygame.K_RETURN]) == True and self.index == 5:
-                    with open("resources/leaderboard.json", 'r', encoding="utf-8") as score_list:
-                        backup = json.load(score_list)
+                    try:
+                        with open("resources/leaderboard.json", 'r', encoding="utf-8") as score_list:
+                            backup = json.load(score_list)
 
-                    with open("resources/leaderboard_backup.json", 'w', encoding="utf-8") as score_list:
-                        json.dump(backup, score_list)
-
-                    pygame.quit()
-                    exit()
+                        with open("resources/leaderboard_backup.json", 'w', encoding="utf-8") as score_list:
+                            json.dump(backup, score_list)
+            
+                        pygame.quit()
+                        exit()
+                    except:
+                        pygame.quit()
+                        exit()
                     
 
             if self.index > 5:
