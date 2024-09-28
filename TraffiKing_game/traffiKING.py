@@ -608,6 +608,8 @@ class Pause():
         self.pointer_y = 0
         self.timer = 0
         self.timer_button = 0
+
+        self.prev_game_state = 0
     
     def update_pause(self):
 
@@ -623,7 +625,10 @@ class Pause():
         self.start_button.set_alpha(self.timer)
         self.exit_button.set_alpha(self.timer)
         player.draw(screen)
-        player2.draw(screen)
+        
+        if self.prev_game_state == 2:
+            player2.draw(screen)
+
         obstacle_group.draw(screen)
         props.draw()
 
@@ -1155,9 +1160,11 @@ while True:
         if game_state == "playing" and event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE or event.key == pygame.K_p:
                 game_state = "pause"
+                pause.prev_game_state = 1
         elif game_state == "2_players"  and event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE or event.key == pygame.K_p:
                 game_state = "pause_multiplayer"
+                pause.prev_game_state = 2
 
     #if player started the game
     if game_state == "playing":
