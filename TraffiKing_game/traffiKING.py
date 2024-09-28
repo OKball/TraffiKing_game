@@ -1071,7 +1071,12 @@ def clean_progress():
 pygame.init()
 screen_width = 1200
 screen_height = 800
-screen = pygame.display.set_mode((screen_width,screen_height))
+rs_screen_width = 1024
+rs_screen_height = 768
+
+screen = pygame.Surface((screen_width, screen_height))
+displayed_screen = pygame.display.set_mode((rs_screen_width,rs_screen_height))
+
 pygame.display.set_caption('traffiKING')
 clock = pygame.time.Clock()
 keys = pygame.key.get_pressed()
@@ -1112,6 +1117,7 @@ main_menu_image = pygame.transform.scale(main_menu_image, (800,400))
 icon = pygame.image.load("resources/police11.png").convert_alpha()
 pygame.display.set_icon(icon)
 intro = Intro_animation()
+
 #frames
 FPS = 144
 TARGET_FPS = 60
@@ -1303,9 +1309,9 @@ while True:
         elif menu.update_menu() == 4:
             game_state = "leaderboard"
 
-
-    # print(clock.get_fps())
     
+    rs_screen = pygame.transform.scale(screen, (rs_screen_width,rs_screen_height)) 
+    displayed_screen.blit(rs_screen, (0,0))
     pygame.display.update()
     clock.tick(FPS)
         
